@@ -1,0 +1,2622 @@
+buildCmd: sh ./gradlew build
+testCmd: true
+lineLength: 4096
+skipVerification: true
+cbmcArguments:
+  # Do not generate coverage comments on generated tests.
+  java-generate-no-comments: true
+  # Constrain the size of arrays created in the analyzed code.
+  java-max-vla-length: 100000
+phases:
+  -
+    # Phase 0 PRETTY, SIMPLE and SMART - pretty tests, do not test private methods directly, Smart-Harness
+    timeout: 180
+    cbmcArguments:
+      # Use simple models first containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: 1500
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+      # Do not test any methods that have the specified access level.
+      do-not-test-methods-with-access: [private]
+      # Instrument the entry point function only.
+      cover-function-only: false
+      # Instrument the file as opposed to the function only
+      cover-only: file
+      # Set string input value
+      string-input-value: ["foo", "Bar", "BAZ", "1234", "1a 2b 3c", "A1B2C3", "a,b,c", "1", "2", "3", "a/b/c", "a'b'c", ",", "/", "'"]
+      # Instantiate classes using the simplest constructor strategy
+      smart-harness: simplest-constructor-and-nondet
+  -
+    # Phase 1 PRETTY AND COMPLEX - standard models only, pretty tests, do not test private methods directly, input factory
+    timeout: 180
+    cbmcArguments:
+      # Use the standard models library
+      classpath: '/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: false
+      # never initialize reference-typed parameter to the entry point with null
+      java-assume-inputs-non-null: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that strings are printable
+      string-printable: true
+      # Set string input value
+      string-input-value: ["foo", "Bar", "BAZ", "1234", "1a 2b 3c", "A1B2C3", "a,b,c", "1", "2", "3", "a/b/c", "a'b'c", ",", "/", "'"]
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 2
+      # Do not test any methods that have the specified access level.
+      do-not-test-methods-with-access: [private]
+      # Instrument the entry point function only.
+      cover-function-only: false
+      # instrument the file as opposed to the function only
+      cover-only: file
+      # Limit input factory recursive depth (default 0 = no recursion allowed)
+      java-test-input-factory-bmc-recursion-limit: 4
+  -
+    # Phase 2 FIFO Strategy - pretty tests, do not test private methods directly, fifo
+    timeout: 100
+    cbmcArguments:
+      # Use the standard models library
+      classpath: '/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: false
+      # never initialize reference-typed parameter to the entry point with null
+      java-assume-inputs-non-null: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Add constraint that strings are printable
+      max-nondet-string-length: 100
+      # Explores the program tree breadth-first.
+      paths: fifo
+      # Set string input value
+      string-input-value: ["foo", "Bar", "BAZ", "1234", "1a 2b 3c", "A1B2C3", "a,b,c", "1", "2", "3", "a/b/c", "a'b'c", ",", "/", "'"]
+      # Add constraint that strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: false
+      # Do not test any methods that have the specified access level.
+      do-not-test-methods-with-access: [private]
+      # Instrument the entry point function only.
+      cover-function-only: false
+      # instrument the file as opposed to the function only
+      cover-only: file
+  -
+    # Phase 3 Exceptions - do not test private methods directly
+    timeout: 180
+    cbmcArguments:
+      # Use simple models containers first (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: false
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Bound the length of input strings.
+      max-nondet-string-length: 30
+      # Add constraint that strings are printable
+      string-printable: false
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: true
+      # Set an upper bound on loop unwinding.
+      unwind: 3
+      # Do not test any methods that have the specified access level.
+      do-not-test-methods-with-access: [private]
+      # Instrument the entry point function only.
+      cover-function-only: false
+      # instrument the file as opposed to the function only
+      cover-only: file
+  -
+    # Phase 4 Direct testing - test private methods directly, increased reflection
+    timeout: 180
+    cbmcArguments:
+      # Use simple models containers first (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: 1500
+      # never initialize reference-typed parameter to the entry point with null
+      java-assume-inputs-non-null: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+      # Set string input value
+      string-input-value: ["foo", "Bar", "BAZ", "1234", "1a 2b 3c", "A1B2C3", "a,b,c", "1", "2", "3", "a/b/c", "a'b'c", ",", "/", "'"]
+      # If the logs contain output of the following then proceed to phase X
+    nextPhase:
+      # If the function is not analysable then do not pass onto the next phase
+      not_analyzed: null
+  -
+    # PHASE 5 Mocking - aggressive mocking, do not test private methods directly
+    timeout: 180
+    cbmcArguments:
+      # Use simple models containers first (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: 3000
+      # never initialize reference-typed parameter to the entry point with null
+      java-assume-inputs-non-null: true
+      # Only load the class (and related inner/outer classes) containing the method under test,
+      load-containing-class-only: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Bound the length of input strings.
+      max-nondet-string-length: 100
+      # Add constraint that strings are printable
+      string-printable: false
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: true
+      # Set an upper bound on loop unwinding.
+      unwind: 3
+      # Do not test any methods that have the specified access level.
+      do-not-test-methods-with-access: [private]
+      # Instrument the entry point function only.
+      cover-function-only: false
+      # instrument the file as opposed to the function only
+      cover-only: file
+units:
+ - target:
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/model/SessionStructure.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/model/SessionStructure.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/TabbedPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/TabbedPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MultipleOptionsTablePanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MultipleOptionsTablePanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/HttpPanel$ComponentsComparator.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/HttpPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamContainerPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamContainerPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFrame$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$6.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/HttpPanel$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/HttpPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$6.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/HttpPanel$SwitchComponentItemListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/HttpPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/StatsListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/StatsListener.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$SitesCustomPopupMenu.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$5.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel$3.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$5.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/ComponentChangedEvent.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/ComponentChangedEvent.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel$8.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/HttpPanelResponse.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/HttpPanelResponse.java
+   - dir: zap/build/classes/java/main
+     file: org/apache/commons/httpclient/URI.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/apache/commons/httpclient/URI.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamContainerPanel$ShowHelpAction.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamContainerPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/network/HttpRequestHeader.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/network/HttpRequestHeader.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/ZapTextComponentUndoManager$RedoAction.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/ZapTextComponentUndoManager.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/FileCopier.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/FileCopier.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/HttpPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/HttpPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/HttpPanelRequest$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/HttpPanelRequest.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/core/proxy/ProxyParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/core/proxy/ProxyParam.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/SiteMapTreeCellRenderer.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/SiteMapTreeCellRenderer.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTableModel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTableModel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$3.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/TabbedPanel2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/TabbedPanel2.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/HttpPanelManager$HttpPanelDefaultViewSelectorFactory.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/HttpPanelManager.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/messagelocation/MessageLocationHighlightRenderersEditors.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/messagelocation/MessageLocationHighlightRenderersEditors.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/network/HttpMessage.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/network/HttpMessage.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/FontUtils.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/FontUtils.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamDialog.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamDialog.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/DisplayUtils.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/DisplayUtils.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/SessionExcludeFromScanPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/SessionExcludeFromScanPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SessionDialog.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SessionDialog.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/ZapTextComponentUndoManager$UndoAction.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/ZapTextComponentUndoManager.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel$4.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFrame$4.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ContextPanelFactory.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ContextPanelFactory.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/messagelocation/TextMessageLocationHighlightEditor.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/messagelocation/TextMessageLocationHighlightEditor.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFrame$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/model/StructuralNode.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/model/StructuralNode.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/WorkbenchPanel$Layout.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/WorkbenchPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/ZapResourceBundleControl.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/ZapResourceBundleControl.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/AbstractPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/AbstractPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel$4.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/db/TableAlert.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/db/TableAlert.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractFrame.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/TabbedPanel2$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/TabbedPanel2.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/model/NameValuePair.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/model/NameValuePair.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/globalexcludeurl/GlobalExcludeURLParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/globalexcludeurl/GlobalExcludeURLParam.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/HttpPanelManager.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/HttpPanelManager.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/db/TableTag.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/db/TableTag.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractFrame$FrameWindowStateListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/core/scanner/Alert.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/core/scanner/Alert.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$8.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/model/ParameterParser.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/model/ParameterParser.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/api/OptionsParamApi.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/api/OptionsParamApi.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamDialog$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamDialog.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$13.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ContextListPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ContextListPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/SessionExcludeFromSpiderPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/SessionExcludeFromSpiderPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$7.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/globalexcludeurl/GlobalExcludeURLParamToken.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/globalexcludeurl/GlobalExcludeURLParamToken.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ContextsSitesPanel$ScrollableTreesPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ContextsSitesPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/ZapTextComponentUndoManager.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/ZapTextComponentUndoManager.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/db/Database.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/db/Database.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFrame.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/HttpPanelManager$HttpPanelComponentFactory.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/HttpPanelManager.java
+   - dir: zap/build/classes/java/main
+     file: ch/csnc/extension/util/OptionsParamExperimentalSliSupport.class
+     sourceDir: zap/src/main/java
+     sourceFile: ch/csnc/extension/util/OptionsParamExperimentalSliSupport.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/core/scanner/Alert$Source.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/core/scanner/Alert.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/eventBus/Event.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/eventBus/Event.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractFrame$FrameResizedListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MultipleRegexesOptionsPanel$RegexesTableModel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MultipleRegexesOptionsPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/WorkbenchPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/WorkbenchPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/MessagePanelEventListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/MessagePanelEventListener.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/HttpPanelManager$HttpPanelViewFactory.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/HttpPanelManager.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamContainerPanel$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamContainerPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/db/RecordStructure.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/db/RecordStructure.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SessionGeneralPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SessionGeneralPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/TabbedPanelTab$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/TabbedPanelTab.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/ZapXmlConfiguration.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/ZapXmlConfiguration.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/history/HistoryFilter.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/history/HistoryFilter.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$8.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/WorkbenchPanel$ResponsePanelPosition.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/WorkbenchPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$ContextsCustomPopupMenu.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/AddOn$Status.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/AddOn.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/StatusUI.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/StatusUI.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ContextListTableModel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ContextListTableModel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamDialog$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamDialog.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel$7.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/HttpPanelRequest.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/HttpPanelRequest.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$9.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/db/TableHistory.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/db/TableHistory.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel$5.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ContextsSitesPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ContextsSitesPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$11.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/model/Target.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/model/Target.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/network/ConnectionParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/network/ConnectionParam.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/SiteNode$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/SiteNode.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/SiteNodeStringComparator.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/SiteMap.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/network/HttpBody.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/network/HttpBody.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$10.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ContextsTreeCellRenderer.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ContextsTreeCellRenderer.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/HttpMessageCachedData.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/HttpMessageCachedData.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/SortedTreeModel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/SiteMap.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ZapMenuItem.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ZapMenuItem.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/option/OptionsParamView.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/option/OptionsParamView.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/network/HttpMalformedHeaderException.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/network/HttpMalformedHeaderException.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$4.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/HttpPanelManager$HttpPanelManagement.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/HttpPanelManager.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/WorkbenchPanel$DividerResizedListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/WorkbenchPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/network/HttpResponseBody.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/network/HttpResponseBody.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFrame$ChangeWorkbenchLayoutAction.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/DisplayedMessageChangedListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/DisplayedMessageChangedListener.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/option/OptionsParamCertificate.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/option/OptionsParamCertificate.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/model/Context.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/model/Context.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$14.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/ext/ExtensionParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/ext/ExtensionParam.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/LayoutHelper.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/LayoutHelper.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel$5.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/DeleteContextAction.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/DeleteContextAction.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/option/DatabaseParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/option/DatabaseParam.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/messagelocation/TextMessageLocationHighlightRenderer.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/messagelocation/TextMessageLocationHighlightRenderer.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/network/HttpHeader.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/network/HttpHeader.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/model/StructuralSiteNode.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/model/StructuralSiteNode.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFrame$SetResponsePanelPositionAction.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/SiteTreeFilter.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/SiteTreeFilter.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/autoupdate/OptionsParamCheckForUpdates.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/autoupdate/OptionsParamCheckForUpdates.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/model/StandardParameterParser.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/model/StandardParameterParser.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFooterPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFooterPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamContainerPanel$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamContainerPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/network/HttpResponseHeader.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/network/HttpResponseHeader.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/control/Control$Mode.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/control/Control.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/FontUtils$FontType.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/FontUtils.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/model/StructuralTableNode.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/model/StructuralTableNode.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/network/HttpRequestBody.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/network/HttpRequestBody.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/Stats.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/Stats.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/common/AbstractParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/common/AbstractParam.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/Session.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/Session.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MultipleRegexesOptionsPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MultipleRegexesOptionsPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractFrame$SimpleWindowState.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/ZapTextField.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/ZapTextField.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$12.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel$3.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/db/RecordTag.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/db/RecordTag.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/TabbedPanelTab.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/TabbedPanelTab.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFrame$3.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$10.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/Session$OnContextsChangedListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/Session.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/SiteMapEventPublisher.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/SiteMapEventPublisher.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/ZAP.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/ZAP.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/HistoryReference.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/HistoryReference.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/eventBus/EventBus.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/eventBus/EventBus.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$3.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/db/TableStructure.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/db/TableStructure.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$9.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/AbstractDialog$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/AbstractDialog.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/View.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/View.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ZapToggleButton.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ZapToggleButton.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/Constant.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/Constant.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ComponentMaximiser.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ComponentMaximiser.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/SessionExcludeFromProxyPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/SessionExcludeFromProxyPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/I18N.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/I18N.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/OptionsParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/OptionsParam.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/TabbedPanelTab$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/TabbedPanelTab.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$4.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/SiteNode.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/SiteNode.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/db/RecordHistory.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/db/RecordHistory.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ZapToggleButton$ToolTipTextUpdaterOnSelectionStateChange.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ZapToggleButton.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/component/HttpPanelComponentInterface.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/component/HttpPanelComponentInterface.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$7.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/Model.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/Model.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel$6.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ComponentMaximiserMouseListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ComponentMaximiserMouseListener.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/Enableable.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/Enableable.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/db/RecordAlert.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/db/RecordAlert.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/ZapTextArea.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/ZapTextArea.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/AbstractDialog.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/AbstractDialog.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/SiteMap.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/SiteMap.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/edit/ExtensionEdit.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/edit/ExtensionEdit.java
+ - target:
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ScanPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ScanPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/option/DatabaseParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/option/DatabaseParam.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/TabbedPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/TabbedPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MultipleOptionsTablePanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MultipleOptionsTablePanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/HttpPanel$ComponentsComparator.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/HttpPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamContainerPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamContainerPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFrame$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/messagelocation/TextMessageLocationHighlightEditor.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/messagelocation/TextMessageLocationHighlightEditor.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/HttpPanel$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/HttpPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/HttpPanelManager.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/HttpPanelManager.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/StatsListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/StatsListener.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$SitesCustomPopupMenu.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/SortedComboBoxModel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/SortedComboBoxModel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$5.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/ZapXmlConfiguration.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/ZapXmlConfiguration.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel$3.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/ComponentChangedEvent.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/ComponentChangedEvent.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$13.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/HttpPanelResponse.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/HttpPanelResponse.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/DisplayedMessageChangedListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/DisplayedMessageChangedListener.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/ZapTextComponentUndoManager$RedoAction.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/ZapTextComponentUndoManager.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$3.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/FontUtils$FontType.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/FontUtils.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/HttpPanelRequest$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/HttpPanelRequest.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/SiteMapTreeCellRenderer.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/SiteMapTreeCellRenderer.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTableModel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTableModel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$3.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/HttpPanelManager$HttpPanelDefaultViewSelectorFactory.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/HttpPanelManager.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/messagelocation/MessageLocationHighlightRenderersEditors.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/messagelocation/MessageLocationHighlightRenderersEditors.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel$4.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamDialog.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamDialog.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/DisplayUtils.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/DisplayUtils.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/SessionExcludeFromScanPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/SessionExcludeFromScanPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SessionDialog.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SessionDialog.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/autoupdate/OptionsParamCheckForUpdates.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/autoupdate/OptionsParamCheckForUpdates.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/FontUtils.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/FontUtils.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel$8.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/ExtensionAdaptor.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/ExtensionAdaptor.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFrame$4.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ContextPanelFactory.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ContextPanelFactory.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$6.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFrame$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/SessionExcludeFromSpiderPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/SessionExcludeFromSpiderPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/WorkbenchPanel$Layout.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/WorkbenchPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/ZapResourceBundleControl.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/ZapResourceBundleControl.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/AbstractPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/AbstractPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel$4.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/model/GenericScanner.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/model/GenericScanner.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractFrame.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/TabbedPanel2$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/TabbedPanel2.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/globalexcludeurl/GlobalExcludeURLParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/globalexcludeurl/GlobalExcludeURLParam.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/AbstractDialog$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/AbstractDialog.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractFrame$FrameWindowStateListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$8.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/api/OptionsParamApi.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/api/OptionsParamApi.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamDialog$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamDialog.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ContextListPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ContextListPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/AbstractDialog.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/AbstractDialog.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$7.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/globalexcludeurl/GlobalExcludeURLParamToken.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/globalexcludeurl/GlobalExcludeURLParamToken.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ContextsSitesPanel$ScrollableTreesPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ContextsSitesPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/HttpPanel$SwitchComponentItemListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/HttpPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/SiteNode.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/SiteNode.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFrame.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/HttpPanelManager$HttpPanelComponentFactory.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/HttpPanelManager.java
+   - dir: zap/build/classes/java/main
+     file: ch/csnc/extension/util/OptionsParamExperimentalSliSupport.class
+     sourceDir: zap/src/main/java
+     sourceFile: ch/csnc/extension/util/OptionsParamExperimentalSliSupport.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$5.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ScanPanel$5.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ScanPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractFrame$FrameResizedListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MultipleRegexesOptionsPanel$RegexesTableModel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MultipleRegexesOptionsPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/WorkbenchPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/WorkbenchPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/MessagePanelEventListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/MessagePanelEventListener.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/HttpPanelManager$HttpPanelViewFactory.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/HttpPanelManager.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamContainerPanel$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamContainerPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SessionGeneralPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SessionGeneralPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/TabbedPanelTab$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/TabbedPanelTab.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/messagelocation/TextMessageLocationHighlightRenderer.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/messagelocation/TextMessageLocationHighlightRenderer.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$ContextsCustomPopupMenu.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/edit/ExtensionEdit.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/edit/ExtensionEdit.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/WorkbenchPanel$ResponsePanelPosition.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/WorkbenchPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ScanPanel$7.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ScanPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/AddOn$Status.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/AddOn.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$4.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ContextListTableModel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ContextListTableModel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamDialog$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamDialog.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel$7.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/HttpPanelRequest.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/HttpPanelRequest.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$10.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/users/User.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/users/User.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel$5.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ContextsSitesPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ContextsSitesPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$11.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/model/Target.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/model/Target.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/network/ConnectionParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/network/ConnectionParam.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ScanPanel$Location.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ScanPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/SiteNodeStringComparator.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/SiteMap.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ZapToggleButton$ToolTipTextUpdaterOnSelectionStateChange.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ZapToggleButton.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ContextsTreeCellRenderer.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ContextsTreeCellRenderer.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/SortedTreeModel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/SiteMap.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ZapMenuItem.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ZapMenuItem.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/option/OptionsParamView.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/option/OptionsParamView.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/StatusUI.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/StatusUI.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFrame$SetResponsePanelPositionAction.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/Model.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/Model.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/ZapTextComponentUndoManager.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/ZapTextComponentUndoManager.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/WorkbenchPanel$DividerResizedListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/WorkbenchPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFrame$ChangeWorkbenchLayoutAction.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamContainerPanel$ShowHelpAction.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamContainerPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/control/Control.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/control/Control.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/option/OptionsParamCertificate.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/option/OptionsParamCertificate.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/model/Context.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/model/Context.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$14.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/ext/ExtensionParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/ext/ExtensionParam.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/LayoutHelper.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/LayoutHelper.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel$5.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/core/proxy/ProxyParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/core/proxy/ProxyParam.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ScanStatus.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ScanStatus.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/HttpPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/HttpPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/SessionExcludeFromProxyPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/SessionExcludeFromProxyPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/model/StandardParameterParser.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/model/StandardParameterParser.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFooterPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFooterPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamContainerPanel$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamContainerPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/control/Control$Mode.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/control/Control.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/TabbedPanel2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/TabbedPanel2.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ScanPanel$8.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ScanPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$9.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ScanPanel$4.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ScanPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/Stats.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/Stats.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/common/AbstractParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/common/AbstractParam.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/Session.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/Session.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MultipleRegexesOptionsPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MultipleRegexesOptionsPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractFrame$SimpleWindowState.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ScanPanel$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ScanPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/ZapTextField.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/ZapTextField.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/HttpPanelManager$HttpPanelManagement.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/HttpPanelManager.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$12.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel$3.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$9.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/TabbedPanelTab.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/TabbedPanelTab.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ComponentMaximiserMouseListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ComponentMaximiserMouseListener.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ScanPanel$3.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ScanPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/Session$OnContextsChangedListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/Session.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ScanPanel$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ScanPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/FileCopier.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/FileCopier.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/ZapTextComponentUndoManager$UndoAction.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/ZapTextComponentUndoManager.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/View.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/View.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ZapToggleButton.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ZapToggleButton.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/Constant.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/Constant.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ComponentMaximiser.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ComponentMaximiser.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/I18N.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/I18N.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/OptionsParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/OptionsParam.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/TabbedPanelTab$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/TabbedPanelTab.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$4.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$10.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/component/HttpPanelComponentInterface.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/component/HttpPanelComponentInterface.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$7.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/DeleteContextAction.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/DeleteContextAction.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel$6.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$6.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFrame$3.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/Enableable.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/Enableable.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/ZapTextArea.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/ZapTextArea.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ScanPanel$6.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ScanPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$8.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/SiteMap.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/SiteMap.java
+ - target:
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/network/ZapNTLMEngineImpl.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/network/ZapNTLMEngineImpl.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/network/ZapNTLMEngineImpl$Type3Message.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/network/ZapNTLMEngineImpl.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/network/ZapNTLMEngineImpl$Type1Message.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/network/ZapNTLMEngineImpl.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/network/ZapNTLMEngineImpl$HMACMD5.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/network/ZapNTLMEngineImpl.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/network/ZapNTLMEngineImpl$Type2Message.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/network/ZapNTLMEngineImpl.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/network/ZapNTLMEngineImpl$CipherGen.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/network/ZapNTLMEngineImpl.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/network/ZapNTLMEngineImpl$NTLMMessage.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/network/ZapNTLMEngineImpl.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/network/ZapNTLMEngineImpl$MD4.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/network/ZapNTLMEngineImpl.java
+ - target:
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/ExtensionScript.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/ExtensionScript.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/TabbedPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/TabbedPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MultipleOptionsTablePanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MultipleOptionsTablePanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/SiteMapTreeCellRenderer.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/SiteMapTreeCellRenderer.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamContainerPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamContainerPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/AddOnClassLoader$ParentClassLoader.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/AddOnClassLoader.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFrame$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$6.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/HttpPanel$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/HttpPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/HttpPanelManager.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/HttpPanelManager.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/StatsListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/StatsListener.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$SitesCustomPopupMenu.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/ZapXmlConfiguration.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/ZapXmlConfiguration.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel$3.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/ComponentChangedEvent.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/ComponentChangedEvent.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$11.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/WorkbenchPanel$DividerResizedListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/WorkbenchPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$13.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ContextsTreeCellRenderer.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ContextsTreeCellRenderer.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/HttpPanelResponse.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/HttpPanelResponse.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/ScriptUI.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/ScriptUI.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/DisplayedMessageChangedListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/DisplayedMessageChangedListener.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/ZapTextComponentUndoManager$RedoAction.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/ZapTextComponentUndoManager.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/FileCopier.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/FileCopier.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/FontUtils$FontType.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/FontUtils.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/HttpPanelRequest$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/HttpPanelRequest.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/HttpPanel$ComponentsComparator.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/HttpPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTableModel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTableModel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ZapToggleButton.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ZapToggleButton.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$3.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/HttpPanelManager$HttpPanelDefaultViewSelectorFactory.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/HttpPanelManager.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/messagelocation/MessageLocationHighlightRenderersEditors.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/messagelocation/MessageLocationHighlightRenderersEditors.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/ExtensionLoader.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/ExtensionLoader.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/FontUtils.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/FontUtils.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/ZapTextArea.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/ZapTextArea.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/DisplayUtils.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/DisplayUtils.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/SessionExcludeFromScanPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/SessionExcludeFromScanPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/CommandLineArgument.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/CommandLineArgument.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SessionDialog.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SessionDialog.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/OptionsScriptPanel$AntiCsrfMultipleOptionsPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/OptionsScriptPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/network/HttpMessage.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/network/HttpMessage.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/AddOnCollection.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/AddOnCollection.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel$4.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/ExtensionAdaptor.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/ExtensionAdaptor.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFrame$4.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/ExtensionHookView.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/ExtensionHookView.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/messagelocation/TextMessageLocationHighlightEditor.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/messagelocation/TextMessageLocationHighlightEditor.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFrame$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/AbstractDialog.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/AbstractDialog.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/WorkbenchPanel$Layout.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/WorkbenchPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/ZapResourceBundleControl.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/ZapResourceBundleControl.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/AbstractPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/AbstractPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel$4.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/ScriptTreeModel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/ScriptTreeModel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/HttpSenderScript.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/HttpSenderScript.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ContextPanelFactory.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ContextPanelFactory.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractFrame.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/AddOnClassnames.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/AddOnClassnames.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/TabbedPanel2$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/TabbedPanel2.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/globalexcludeurl/GlobalExcludeURLParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/globalexcludeurl/GlobalExcludeURLParam.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/SiteNodeStringComparator.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/SiteMap.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractFrame$FrameWindowStateListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/AddOnInstaller.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/AddOnInstaller.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/api/ApiImplementor.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/api/ApiImplementor.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/api/OptionsParamApi.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/api/OptionsParamApi.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamDialog$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamDialog.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ContextListPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ContextListPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/SessionExcludeFromSpiderPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/SessionExcludeFromSpiderPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/AddonFilesChangedListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/AddonFilesChangedListener.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$7.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/globalexcludeurl/GlobalExcludeURLParamToken.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/globalexcludeurl/GlobalExcludeURLParamToken.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ContextsSitesPanel$ScrollableTreesPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ContextsSitesPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/HttpPanel$SwitchComponentItemListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/HttpPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$5.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/api/ApiAction.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/api/ApiAction.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFrame.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/HttpPanelManager$HttpPanelComponentFactory.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/HttpPanelManager.java
+   - dir: zap/build/classes/java/main
+     file: ch/csnc/extension/util/OptionsParamExperimentalSliSupport.class
+     sourceDir: zap/src/main/java
+     sourceFile: ch/csnc/extension/util/OptionsParamExperimentalSliSupport.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$5.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/AddOn$HelpSetData.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/AddOn.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/JavascriptEngineWrapper.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/JavascriptEngineWrapper.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractFrame$FrameResizedListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MultipleRegexesOptionsPanel$RegexesTableModel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MultipleRegexesOptionsPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/WorkbenchPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/WorkbenchPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/MessagePanelEventListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/MessagePanelEventListener.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/HttpPanelManager$HttpPanelViewFactory.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/HttpPanelManager.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/AddOnClassLoader.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/AddOnClassLoader.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamContainerPanel$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamContainerPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/HttpSenderScriptListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/HttpSenderScriptListener.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SessionGeneralPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SessionGeneralPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/TabbedPanelTab$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/TabbedPanelTab.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/messagelocation/TextMessageLocationHighlightRenderer.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/messagelocation/TextMessageLocationHighlightRenderer.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$ContextsCustomPopupMenu.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/OptionsScriptTableModel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/OptionsScriptTableModel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/ExtensionScript$ScriptWriter.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/ExtensionScript.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/edit/ExtensionEdit.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/edit/ExtensionEdit.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/ZapRelease.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/ZapRelease.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/WorkbenchPanel$ResponsePanelPosition.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/WorkbenchPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/AddOn$Status.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/AddOn.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$4.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/control/Control.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/control/Control.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/core/proxy/ProxyParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/core/proxy/ProxyParam.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ContextListTableModel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ContextListTableModel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamDialog$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamDialog.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel$7.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/OptionsScriptPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/OptionsScriptPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/ProxyListenerScript.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/ProxyListenerScript.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/HttpPanelRequest.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/HttpPanelRequest.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/ScriptOutputListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/ScriptOutputListener.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/ScriptType.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/ScriptType.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/ScriptAPI.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/ScriptAPI.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ContextsSitesPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ContextsSitesPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/ExtensionScript$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/ExtensionScript.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/ExtensionHook.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/ExtensionHook.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/ZapReleaseComparitor.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/ZapReleaseComparitor.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/model/Target.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/model/Target.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/DefaultEngineWrapper.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/DefaultEngineWrapper.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/network/ConnectionParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/network/ConnectionParam.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/ScriptEventListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/ScriptEventListener.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/ScriptNode.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/ScriptNode.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/AddOnLoader.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/AddOnLoader.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/AbstractDialog$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/AbstractDialog.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/ExtensionScript$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/ExtensionScript.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$10.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel$8.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/ExtensionScript$ClearScriptVarsOnSessionChange.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/ExtensionScript.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/api/ApiElement.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/api/ApiElement.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/SortedTreeModel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/SiteMap.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/HttpSenderScriptHelper.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/HttpSenderScriptHelper.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ZapMenuItem.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ZapMenuItem.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/option/OptionsParamView.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/option/OptionsParamView.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/AddOnLoader$AddOnRunState.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/AddOnLoader.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/StatusUI.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/StatusUI.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/api/ApiView.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/api/ApiView.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/HttpPanelManager$HttpPanelManagement.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/HttpPanelManager.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/MultipleWriters.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/MultipleWriters.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/ZapTextComponentUndoManager.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/ZapTextComponentUndoManager.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/TabbedPanel2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/TabbedPanel2.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/ScriptWrapper.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/ScriptWrapper.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFrame$ChangeWorkbenchLayoutAction.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/ScriptEngineWrapper.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/ScriptEngineWrapper.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamContainerPanel$ShowHelpAction.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamContainerPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/ScriptParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/ScriptParam.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/AddOn$BaseRunRequirements.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/AddOn.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/option/OptionsParamCertificate.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/option/OptionsParamCertificate.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/model/Context.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/model/Context.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$14.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/ext/ExtensionParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/ext/ExtensionParam.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/LayoutHelper.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/LayoutHelper.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$8.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel$1.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/extension/option/DatabaseParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/extension/option/DatabaseParam.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/AddOnRunIssuesUtils.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/AddOnRunIssuesUtils.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/network/HttpSender.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/network/HttpSender.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFrame$SetResponsePanelPositionAction.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/AddOnLoader$JarFilenameFilter.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/AddOnLoader.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/autoupdate/OptionsParamCheckForUpdates.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/autoupdate/OptionsParamCheckForUpdates.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/model/StandardParameterParser.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/model/StandardParameterParser.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/BaseZapAddOnXmlData$ExtensionWithDeps.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/BaseZapAddOnXmlData.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/ExtensionFactory.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/ExtensionFactory.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFooterPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFooterPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamContainerPanel$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamContainerPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/ZapAddOnXmlFile.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/ZapAddOnXmlFile.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/TargetedScript.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/TargetedScript.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/control/Control$Mode.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/control/Control.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/HttpPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/HttpPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/Version.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/Version.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/AddOn$ExtensionRunRequirements.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/AddOn.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$9.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/Stats.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/Stats.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/common/AbstractParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/common/AbstractParam.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/Session.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/Session.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MultipleRegexesOptionsPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MultipleRegexesOptionsPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractFrame$SimpleWindowState.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/ZapTextField.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/ZapTextField.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/AddOn.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/AddOn.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$12.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/DeleteContextAction.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/DeleteContextAction.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel$3.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$9.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/control/AbstractControl.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/control/AbstractControl.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/TabbedPanelTab.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/TabbedPanelTab.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainFrame$3.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainFrame.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel$5.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$10.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel$6.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/ZAP.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/ZAP.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/AddOn$BundleData.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/AddOn.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$3.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/CommandLine.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/CommandLine.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/ZapTextComponentUndoManager$UndoAction.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/ZapTextComponentUndoManager.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/AddOn$InvalidAddOnException.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/AddOn.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/View.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/View.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/AbstractMultipleOptionsBaseTablePanel.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/Constant.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/Constant.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/BaseZapAddOnXmlData$Dependencies.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/BaseZapAddOnXmlData.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ComponentMaximiser.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ComponentMaximiser.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/SessionExcludeFromProxyPanel.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/SessionExcludeFromProxyPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/I18N.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/I18N.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/script/ProxyScript.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/script/ProxyScript.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/BaseZapAddOnXmlData.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/BaseZapAddOnXmlData.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/OptionsParam.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/OptionsParam.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/TabbedPanelTab$2.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/TabbedPanelTab.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$4.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/SiteNode.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/SiteNode.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/MainToolbarPanel$5.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/MainToolbarPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ZapToggleButton$ToolTipTextUpdaterOnSelectionStateChange.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ZapToggleButton.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/extension/httppanel/component/HttpPanelComponentInterface.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/extension/httppanel/component/HttpPanelComponentInterface.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$7.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/Model.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/Model.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/AddOn$AddOnRunRequirements.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/AddOn.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/Session$OnContextsChangedListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/Session.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/SiteMapPanel$6.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/SiteMapPanel.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/view/ComponentMaximiserMouseListener.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/view/ComponentMaximiserMouseListener.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/Enableable.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/Enableable.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/AbstractParamDialog.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/AbstractParamDialog.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/BaseZapAddOnXmlData$AddOnDep.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/BaseZapAddOnXmlData.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/control/AddOn$ValidationResult.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/control/AddOn.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/view/MainMenuBar$8.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/view/MainMenuBar.java
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/model/SiteMap.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/model/SiteMap.java
+ - target:
+   - dir: zap/build/classes/java/main
+     file: org/parosproxy/paros/core/scanner/Category.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/parosproxy/paros/core/scanner/Category.java
+   - dir: zap/build/classes/java/main
+     file: org/zaproxy/zap/utils/I18N.class
+     sourceDir: zap/src/main/java
+     sourceFile: org/zaproxy/zap/utils/I18N.java
